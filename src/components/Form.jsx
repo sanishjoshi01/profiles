@@ -17,7 +17,7 @@ const Form = ({ onClose, addFormData, selectedData }) => {
   const [dob, setDob] = useState("");
   const [city, setCity] = useState("");
   const [district, setDistrict] = useState("");
-  const [province, setProvince] = useState("");
+  const [province, setProvince] = useState("Province 1"); // Default to Province 1
   const [profile, setProfile] = useState(null);
   const [uploadLoading, setUploadLoading] = useState(false);
 
@@ -37,7 +37,9 @@ const Form = ({ onClose, addFormData, selectedData }) => {
       setCity(selectedData.city || "");
       setDistrict(selectedData.district || "");
       setProvince(
-        selectedData.country === "Nepal" ? selectedData.province || "" : ""
+        selectedData.country === "Nepal"
+          ? selectedData.province || "Province 1"
+          : ""
       );
       setSelectedCountry(selectedData.country || "Nepal");
       setProfile(selectedData.profile || null);
@@ -109,6 +111,18 @@ const Form = ({ onClose, addFormData, selectedData }) => {
 
     getCountriesData();
   }, []);
+
+  const handleCountryChange = (e) => {
+    const country = e.target.value;
+    setSelectedCountry(country);
+
+    // Reset province if the selected country is not Nepal
+    if (country !== "Nepal") {
+      setProvince("");
+    } else {
+      setProvince("Province 1"); // Default to Province 1 when Nepal is selected
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -198,7 +212,7 @@ const Form = ({ onClose, addFormData, selectedData }) => {
         </span>
       );
     }
-    return null; // Add this line to prevent returning undefined
+    return null;
   });
 
   let renderedFlags = countries.map((country) => {
@@ -212,7 +226,7 @@ const Form = ({ onClose, addFormData, selectedData }) => {
         />
       );
     }
-    return null; // Add this line to prevent returning undefined
+    return null;
   });
 
   let renderedOptions = countries.map((country) => {
@@ -409,7 +423,7 @@ const Form = ({ onClose, addFormData, selectedData }) => {
               <div className="relative">
                 <select
                   value={selectedCountry}
-                  onChange={(e) => setSelectedCountry(e.target.value)}
+                  onChange={handleCountryChange}
                   className="block appearance-none w-full text-xs bg-gray-200 border border-gray-200 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
                   id="country"
                 >
