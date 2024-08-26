@@ -1,7 +1,7 @@
 import { IoPersonCircle } from "react-icons/io5";
 import { useState } from "react";
 
-const Table = ({ formDataList, setFormDataList }) => {
+const Table = ({ formDataList, setFormDataList, onEdit }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -106,7 +106,7 @@ const Table = ({ formDataList, setFormDataList }) => {
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                   <span
-                    onClick={() => console.log("Edit functionality")}
+                    onClick={() => onEdit(index)}
                     className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
                   >
                     Edit

@@ -1,6 +1,7 @@
 import Button from "./Button";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import imageCompression from "browser-image-compression";
 
 const Form = ({ onClose, addFormData, selectedData }) => {
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,7 @@ const Form = ({ onClose, addFormData, selectedData }) => {
   const [district, setDistrict] = useState("");
   const [province, setProvince] = useState("");
   const [profile, setProfile] = useState(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
 
   // Error states
   const [nameError, setNameError] = useState("");
@@ -42,17 +44,36 @@ const Form = ({ onClose, addFormData, selectedData }) => {
     }
   }, [selectedData]);
 
-  const handleProfileChange = (event) => {
+  const handleProfileChange = async (event) => {
     const file = event.target.files[0];
     if (file && file.type !== "image/png") {
       setFileError("Only PNG images are allowed.");
     } else {
       setFileError("");
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfile(reader.result);
-      };
-      reader.readAsDataURL(file);
+
+      try {
+        // Options for compression
+        const options = {
+          maxSizeMB: 0.02,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        };
+        setUploadLoading(true);
+
+        // Compress the image
+        const compressedFile = await imageCompression(file, options);
+
+        // Convert to Base64 string
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64data = reader.result;
+          setProfile(base64data);
+          setUploadLoading(false);
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error("Error compressing the image:", error);
+      }
     }
   };
 
@@ -229,10 +250,16 @@ const Form = ({ onClose, addFormData, selectedData }) => {
                   htmlFor="profile-upload"
                   className="flex flex-col justify-center items-center w-32 md:w-44 h-16 md:h-36 bg-gray-200 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-300"
                 >
-                  <div className="text-gray-400">
-                    <span className="text-xs md:text-xl">+</span>
-                    <span className="text-xs md:text-sm">Add Your Profile</span>
-                  </div>
+                  {uploadLoading ? (
+                    <p className="text-xs">Uploading...</p>
+                  ) : (
+                    <div className="text-gray-400">
+                      <span className="text-xs md:text-xl">+</span>
+                      <span className="text-xs md:text-sm">
+                        Add Your Profile
+                      </span>
+                    </div>
+                  )}
                   <input
                     id="profile-upload"
                     type="file"
@@ -246,7 +273,8 @@ const Form = ({ onClose, addFormData, selectedData }) => {
                 <p className="text-red-500 text-xs mt-2">{fileError}</p>
               )}
             </div>
-
+          </div>
+          <div className="flex flex-wrap -mx-3 mb-6">
             {/* Name field */}
             <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
               <label
@@ -437,6 +465,7 @@ const Form = ({ onClose, addFormData, selectedData }) => {
             )}
           </div>
 
+          {/* Actions Buttons */}
           <div className="flex items-center gap-2">
             <Button success className="rounded-md text-xs hover:bg-green-600">
               {selectedData ? "Update" : "Save"}
